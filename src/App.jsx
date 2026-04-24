@@ -184,9 +184,18 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [handleKey])
 
-  const handleShare = () => {
+  const handleShare = async () => {
     const text = buildShareText(guesses, won)
-    navigator.clipboard.writeText(text).then(() => showMessage('Copied!', 1500))
+    if (navigator.share) {
+      try {
+        await navigator.share({ text })
+      } catch (e) {
+        if (e.name !== 'AbortError') showMessage('Could not share', 1500)
+      }
+    } else {
+      await navigator.clipboard.writeText(text)
+      showMessage('Copied!', 1500)
+    }
   }
 
   const keyStates = getKeyStates(guesses)
