@@ -86,6 +86,18 @@ const VALID_WORDS = new Set([
   'WROTE','YACHT','YIELD','YOUNG','YOUTH','ZONAL',
 ])
 
+const EMOJI = { correct: '🟩', present: '🟨', absent: '⬛' }
+
+function buildShareText(guesses, won) {
+  const score = won ? guesses.length : 'X'
+  const grid = guesses
+    .map(guess =>
+      guess.split('').map((_, i) => EMOJI[getTileState(guess, i, ANSWER)]).join('')
+    )
+    .join('\n')
+  return `Stingle ${score}/${MAX_GUESSES}\n\n${grid}`
+}
+
 function getTileState(guess, index, answer) {
   const letter = guess[index]
   if (letter === answer[index]) return 'correct'
@@ -172,6 +184,11 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKeyDown)
   }, [handleKey])
 
+  const handleShare = () => {
+    const text = buildShareText(guesses, won)
+    navigator.clipboard.writeText(text).then(() => showMessage('Copied!', 1500))
+  }
+
   const keyStates = getKeyStates(guesses)
 
   // Build the full grid rows (completed + current + empty)
@@ -239,6 +256,9 @@ export default function App() {
 
       {gameOver && (
         <div className="play-again">
+          <button onClick={handleShare} className="share-btn">
+            Share
+          </button>
           <button onClick={() => {
             setGuesses([])
             setCurrent('')
